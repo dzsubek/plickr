@@ -1,0 +1,26 @@
+{
+	"name": "dzsubek/plickr",
+	"description": "Flickr API Client lib",
+	"minimum-stability": "stable",
+	"authors": [
+		{
+			"name": "Attila Szalay",
+			"email": "dzsubek@dzsubek.hu"
+		}
+	],
+	"license": "MIT",
+
+	"autoload": {
+		"psr-0": { "Plickr": "src/" }
+	},
+
+	"require": {
+		"php": ">= 5.3",
+		"ext-curl": "*",
+		"guzzle/guzzle": "~3.1"
+	},
+
+	"require-dev": {
+
+	}
+}
