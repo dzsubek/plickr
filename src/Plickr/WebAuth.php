@@ -35,6 +35,14 @@ class WebAuth
 		return $this->appConfig->getAuthUrl().'?'.$params->getQueryParams();
 	}
 
+	/**
+	 * Get access token
+	 *
+	 * @param string $frob
+	 *
+	 * @return AccessToken
+	 * @throws AuthFailedException
+	 */
 	public function getToken($frob)
 	{
 		$params = new ParamHolder($this->appConfig);
@@ -46,10 +54,22 @@ class WebAuth
 			->send()->xml();
 
 		$attr = $response->attributes();
-		if ($attr['stat'] == 'fail') {
+		if ($attr['stat'] != 'ok') {
 			$errAttr = $response->err->attributes();
 			throw new AuthFailedException((string) $errAttr['msg'], (int) $errAttr['code']);
 		}
+
+		$userInfo = $response->auth->user->attributes();
+		$user     = new User(
+			(string)$userInfo['nsid'],
+			(string)$userInfo['username'],
+			(string)$userInfo['fullname']
+		);
+		return new AccessToken(
+			(string)$response->auth->token,
+			(string)$response->auth->perms,
+			$user
+		);
 	}
 
 	private function getClient()
