@@ -40,6 +40,17 @@ class ParamHolder {
 	}
 
 	/**
+	 * @param $array
+	 *
+	 * @return $this
+	 */
+	public function setArray($array)
+	{
+		$this->params = array_merge($this->params, $array);
+		return $this;
+	}
+
+	/**
 	 * @return string
 	 */
 	public function getQueryParams()
