@@ -51,6 +51,8 @@ class ParamHolder {
 	}
 
 	/**
+	 * Get params with sign in query string
+	 *
 	 * @return string
 	 */
 	public function getQueryParams()
@@ -61,7 +63,17 @@ class ParamHolder {
 	}
 
 	/**
-	 * @return string
+	 * Get params with sign in array
+	 *
+	 * @return array
+	 */
+	public function getArray()
+	{
+		return $this->signParams();
+	}
+
+	/**
+	 * @return array
 	 */
 	private function signParams()
 	{
@@ -69,6 +81,9 @@ class ParamHolder {
 		ksort($params);
 		$sign = $this->appConfig->getApiSecret();
 		foreach ($params as $key => $value) {
+			if (!empty($value) && $value[0] == '@') {
+				continue;
+			}
 			$sign .= $key.$value;
 		}
 

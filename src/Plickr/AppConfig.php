@@ -29,6 +29,11 @@ class AppConfig {
 	 */
 	private $apiUrl;
 
+	/**
+	 * @var string
+	 */
+	private $uploadUrl;
+
 	public function __construct($config)
 	{
 		$this->checkConfigArray($config);
@@ -36,6 +41,7 @@ class AppConfig {
 		$this->apiSecret = $config['api_secret'];
 		$this->authUrl   = $config['auth_url'];
 		$this->apiUrl    = $config['api_url'];
+		$this->uploadUrl = $config['upload_url'];
 	}
 
 	/**
@@ -45,7 +51,7 @@ class AppConfig {
 	 */
 	private function checkConfigArray($config)
 	{
-		$required = array('api_key', 'api_secret', 'auth_url', 'api_url');
+		$required = array('api_key', 'api_secret', 'auth_url', 'api_url', 'upload_url');
 		foreach ($required as $field)
 		{
 			if (!array_key_exists($field, $config) || empty($config[$field])) {
@@ -84,6 +90,14 @@ class AppConfig {
 	public function getApiUrl()
 	{
 		return $this->apiUrl;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getUploadUrl()
+	{
+		return $this->uploadUrl;
 	}
 
 }
