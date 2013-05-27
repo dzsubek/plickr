@@ -63,6 +63,15 @@ class Client {
 		return $result['photosets'];
 	}
 
+	/**
+	 * Create a photo set
+	 *
+	 * @param string $title
+	 * @param int    $primaryPhotoId
+	 * @param string $description
+	 *
+	 * @return mixed
+	 */
 	public function createPhotoSet($title, $primaryPhotoId, $description = '')
 	{
 		$result = $this->call(
@@ -73,10 +82,46 @@ class Client {
 				 'primary_photo_id' => $primaryPhotoId,
 			)
 		);
-var_dump($result); die();
-		return $result;
+		return $result['photoset'];
 	}
 
+	/**
+	 * Add a photo to photo set
+	 *
+	 * @param int $photoSetId
+	 * @param int $photoId
+	 *
+	 * @return bool
+	 */
+	public function addPhotoToSet($photoSetId, $photoId)
+	{
+		$result = $this->call(
+			'flickr.photosets.addPhoto',
+			array(
+				 'photoset_id' => $photoSetId,
+				 'photo_id'    => $photoId,
+			)
+		);
+		return true;
+	}
+
+	/**
+	 * Upload a photo
+	 *
+	 * @param string $path
+	 * @param string $title
+	 * @param string $description
+	 * @param string $tags
+	 * @param int    $isPublic
+	 * @param int    $isFriend
+	 * @param int    $isFamily
+	 * @param string $safetyLevel
+	 * @param string $contentType
+	 * @param string $hidden
+	 *
+	 * @return int
+	 * @throws ApiException
+	 */
 	public function upload(
 		$path,
 		$title = '',
@@ -89,23 +134,33 @@ var_dump($result); die();
 		$contentType = '',
 		$hidden = ''
 	) {
-		$result = $this->call(
-			'upload',
-			array(
-				 'photo'        => '@' . $path,
-				 'title'        => $title,
-				 'description'  => $description,
-				 'tags'         => $tags,
-				 'is_public'    => $isPublic,
-				 'is_friend'    => $isFriend,
-				 'is_family'    => $isFamily,
-				 'safety_level' => $safetyLevel,
-				 'content_type' => $contentType,
-				 'hidden'       => $hidden
-			)
+		$params = array(
+			 'photo'        => '@' . $path,
+			 'title'        => $title,
+			 'description'  => $description,
+			 'tags'         => $tags,
+			 'is_public'    => $isPublic,
+			 'is_friend'    => $isFriend,
+			 'is_family'    => $isFamily,
+			 'safety_level' => $safetyLevel,
+			 'content_type' => $contentType,
+			 'hidden'       => $hidden,
+			 'format' => 'json'
 		);
 
-		var_dump($result);
+		$paramHolder = $this->getParamHolder()
+			->setArray($params);
+		$response = $this->getClient(true)
+			->post('',null, $paramHolder->getArray())
+			->send()
+			->xml();
+
+		$attributes = $response->attributes();
+		if ($attributes['stat'] != 'ok') {
+			throw new ApiException($response['message'], $response['code']);
+		}
+
+		return (int) $response->photoid;
 	}
 
 	/**
@@ -119,36 +174,49 @@ var_dump($result); die();
 	 */
 	private function call($method, $params)
 	{
-		$paramHolder = new ParamHolder($this->appConfig);
-		$paramHolder
-			->set('api_key', $this->appConfig->getApiKey())
-			->set('auth_token', $this->accessToken->getToken())
+		$paramHolder = $this->getParamHolder();
+		$paramHolder->set('method', $method)
 			->set('format', 'json')
 			->set('nojsoncallback', '1')
 			->setArray($params);
 
-		if ($method == 'upload') {
-			$client = $this->getClient(true)->post('', null, $paramHolder->getArray());
+		$response = $this->getClient()->get('?'.$paramHolder->getQueryParams())
+			->send()
+			->json();
 
-		} else {
-			$paramHolder->set('method', $method);
-			$client = $this->getClient(false)->get('?'.$paramHolder->getQueryParams());
-		}
-		$result = $client->send()
-			->xml();
-		var_dump($result); die();
-
-		if ($result['stat'] != 'ok') {
-			throw new ApiException($result['message'], $result['code']);
+		if ($response['stat'] != 'ok') {
+			throw new ApiException($response['message']. ' ('.$method.')', $response['code']);
 		}
 
-		return $result;
+		return $response;
 	}
 
-	private function getClient($forUpload)
+	/**
+	 * Get HTTP client
+	 *
+	 * @param bool $forUpload
+	 *
+	 * @return HttpClient
+	 */
+	private function getClient($forUpload = false)
 	{
 		return new HttpClient(
 			$forUpload ?  $this->appConfig->getUploadUrl() : $this->appConfig->getApiUrl()
 		);
+	}
+
+	/**
+	 * Get param holder with api_key and auth_key
+	 *
+	 * @return ParamHolder
+	 */
+	private function getParamHolder()
+	{
+		$paramHolder = new ParamHolder($this->appConfig);
+		$paramHolder
+			->set('api_key', $this->appConfig->getApiKey())
+			->set('auth_token', $this->accessToken->getToken());
+
+		return $paramHolder;
 	}
 }
