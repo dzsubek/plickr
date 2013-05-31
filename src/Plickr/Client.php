@@ -160,7 +160,7 @@ class Client {
 			throw new ApiException($response['message'], $response['code']);
 		}
 
-		return (int) $response->photoid;
+		return (string) $response->photoid;
 	}
 
 	/**
