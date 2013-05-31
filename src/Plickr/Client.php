@@ -106,6 +106,16 @@ class Client {
 	}
 
 	/**
+	 * Returns information for the calling user related to photo uploads.
+	 *
+	 * @return array
+	 */
+	public function getUploadStatus()
+	{
+		return $this->call('flickr.people.getUploadStatus');
+	}
+
+	/**
 	 * Upload a photo
 	 *
 	 * @param string $path
@@ -172,7 +182,7 @@ class Client {
 	 * @throws ApiException
 	 * @return array
 	 */
-	private function call($method, $params)
+	private function call($method, $params = array())
 	{
 		$paramHolder = $this->getParamHolder();
 		$paramHolder->set('method', $method)
