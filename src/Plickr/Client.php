@@ -160,17 +160,34 @@ class Client {
 
 		$paramHolder = $this->getParamHolder()
 			->setArray($params);
-		$response = $this->getClient(true)
-			->post('',null, $paramHolder->getArray())
-			->send()
-			->xml();
+//		$response = $this->getClient(true)
+//			->post('',null, $paramHolder->getArray())
+//			->send()
+//			->xml();
 
-		$attributes = $response->attributes();
-		if ($attributes['stat'] != 'ok') {
-			throw new ApiException($response['message'], $response['code']);
+//		$attributes = $response->attributes();
+//		if ($attributes['stat'] != 'ok') {
+//			var_dump($attributes);
+//			throw new ApiException($response['message'], $response['code']);
+//		}
+
+//		return (string) $response->photoid;
+
+		$ch = curl_init($this->appConfig->getUploadUrl());
+		curl_setopt($ch, CURLOPT_POST, true);
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $paramHolder->getArray());
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		$response = curl_exec ($ch);
+
+		if (!preg_match('/stat="ok"/', $response)) {
+			throw new ApiException($response);
 		}
 
-		return (string) $response->photoid;
+		preg_match('/<photoid>([0-9]+)<\/photoid>/', $response, $match);
+
+		return $match[1];
+
+
 	}
 
 	/**
