@@ -21,7 +21,8 @@ class WebAuthTest extends PHPUnit_Framework_TestCase
 				 'api_key'    => self::KEY,
 				 'api_secret' => self::SECRET,
 				 'auth_url'   => self::AUTH_URL,
-				 'api_url'   => 'apiurl',
+				 'api_url'    => 'apiurl',
+				 'upload_url' => 'uploadurl'
 			)
 		);
 		$this->webAuth = new \Plickr\WebAuth($config);
